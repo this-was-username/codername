@@ -19,6 +19,7 @@
   },
   "type": "module",
   "dependencies": {
-    "codername": "link:.."
+    "codername": "link:..",
+    "example": "link:.."
   }
 }

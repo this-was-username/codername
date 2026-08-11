@@ -210,3 +210,6 @@ importers:
       codername:
         specifier: link:..
         version: link:..
+      example:
+        specifier: link:..
+        version: link:..
