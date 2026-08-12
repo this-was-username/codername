@@ -23,8 +23,10 @@
   },
   "type": "module",
   "dependencies": {
+    "@types/node": "^26.2.0",
     "commander": "^15.0.0",
-    "development": "link:../.."
+    "development": "link:../..",
+    "esbuild": "^0.28.2"
   },
   "devDependencies": {
     "typescript": "^7.0.2"
