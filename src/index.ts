@@ -33,8 +33,9 @@ async function build(dir: string) {
 
     await esbuild.build({
         entryPoints: [
-            path.join(dir, indexTs),
+            indexTs,
         ],
+        minify: true,
         bundle: true,
         platform: "node",
         outfile: path.join(dir, "lib/index.js"),
