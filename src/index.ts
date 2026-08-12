@@ -38,7 +38,7 @@ async function build(dir: string) {
         minify: true,
         bundle: true,
         platform: "node",
-        outfile: path.join(dir, "lib/index.js"),
+        outfile: path.join(dir, "dist/code.js"),
     });
 }
 

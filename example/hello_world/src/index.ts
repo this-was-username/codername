@@ -1,3 +1,3 @@
-import { api } from "codername/api";
+import { logHello } from "./logHello.js";
 
-api.log("Hello world")
+logHello()

@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc && pnpm exec node document-to-type.mjs",
+    "build": "tsc && pnpm exec node document-to-type.mjs && echo export\\ const\\ api=globalThis.api > lib/api.js",
     "watch": "tsc --watch"
   },
   "bin": {
@@ -35,7 +35,9 @@
   "exports": {
     ".": "./lib/index.js",
     "./api": {
-      "types": "./lib/api.d.ts"
+      "types": "./lib/api.d.ts",
+      "import": "./lib/api.js",
+      "default": "./lib/api.js"
     }
   }
 }
