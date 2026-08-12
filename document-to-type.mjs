@@ -22,7 +22,7 @@ const [
     ,
     ,
     inputFile = "official-reference-copy.md",
-    outputFile = "src/api.d.ts",
+    outputFile = "lib/api.d.ts",
 ] = process.argv;
 
 const inputPath = path.resolve(inputFile);
@@ -674,7 +674,16 @@ function generateDts(functions) {
     /*
      * Generate methods first so we can collect all referenced types.
      */
-    const methods = [];
+    const methods = [
+        // Somehow api.log isn't written in the document
+        "    /**",
+        "     * Log the data",
+        "     * @param data The data to log",
+        "     */",
+        "    log(",
+        "        ...data: any[],",
+        "    ): void;",
+    ];
 
     for (const fn of functions) {
         generateMethod(methods, fn);
@@ -740,7 +749,7 @@ function generateMethod(output, fn) {
     output.push(`    ${fn.name}(`);
 
     for (const parameter of fn.parameters) {
-        console.log(parameter)
+        // console.log(parameter)
         output.push(
             `        ${getParameterName(parameter)}${parameter.optional ? "?" : ""}: ${formatType(parameter.type)},`,
         );
