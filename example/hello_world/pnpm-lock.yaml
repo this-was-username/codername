@@ -208,8 +208,5 @@ importers:
   .:
     dependencies:
       codername:
-        specifier: link:..
-        version: link:..
-      example:
-        specifier: link:..
-        version: link:..
+        specifier: link:../..
+        version: link:../..

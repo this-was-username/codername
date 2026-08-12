@@ -210,6 +210,9 @@ importers:
       commander:
         specifier: ^15.0.0
         version: 15.0.0
+      development:
+        specifier: link:../..
+        version: link:../..
     devDependencies:
       typescript:
         specifier: ^7.0.2

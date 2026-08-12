@@ -23,7 +23,8 @@
   },
   "type": "module",
   "dependencies": {
-    "commander": "^15.0.0"
+    "commander": "^15.0.0",
+    "development": "link:../.."
   },
   "devDependencies": {
     "typescript": "^7.0.2"
