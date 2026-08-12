@@ -10,12 +10,20 @@ import path from "node:path";
  *
  *   node generate-dts.mjs api.md api.d.ts
  *
- * Example:
+ * Default:
  *
- *   node generate-dts.mjs docs.md src/api.d.ts
+ *   node generate-dts.mjs
+ *
+ *   input  = official-reference-copy.md
+ *   output = src/api.d.ts
  */
 
-const [, , inputFile = "official-reference-copy.md", outputFile = "src/api.d.ts"] = process.argv;
+const [
+    ,
+    ,
+    inputFile = "official-reference-copy.md",
+    outputFile = "src/api.d.ts",
+] = process.argv;
 
 const inputPath = path.resolve(inputFile);
 const outputPath = path.resolve(outputFile);
@@ -54,7 +62,7 @@ function parseMarkdown(markdown) {
 
     for (const line of lines) {
         /*
-         * Function:
+         * Function heading:
          *
          * ## applyImpulse
          */
@@ -84,8 +92,6 @@ function parseMarkdown(markdown) {
         }
 
         /*
-         * Parameters:
-         *
          * ### Parameters:
          */
         if (/^###\s+Parameters\s*:?\s*$/i.test(line)) {
@@ -102,36 +108,35 @@ function parseMarkdown(markdown) {
         }
 
         /*
-         * Description before Parameters.
+         * Function description.
          */
         if (!inParameters) {
             const text = line.trim();
 
             if (text && !currentFunction.description) {
-                currentFunction.description = cleanDescription(text);
+                currentFunction.description =
+                    cleanDescription(text);
             }
 
             continue;
         }
 
         /*
-         * Ignore blank lines.
+         * Empty line.
          */
         if (!line.trim()) {
             continue;
         }
 
         /*
-         * Ignore Markdown table separator:
-         *
-         * |-----------|------|-------------|
+         * Markdown table separator.
          */
         if (isTableSeparator(line)) {
             continue;
         }
 
         /*
-         * Parse table rows.
+         * Only process table rows.
          */
         if (!line.trimStart().startsWith("|")) {
             continue;
@@ -155,7 +160,9 @@ function parseMarkdown(markdown) {
             continue;
         }
 
-        const rawName = cleanParameterName(cells[0]);
+        const rawName = cleanParameterName(
+            cells[0],
+        );
 
         if (!rawName) {
             continue;
@@ -173,6 +180,9 @@ function parseMarkdown(markdown) {
             cells[2] ?? "",
         );
 
+        /*
+         * If the type column is empty, skip it.
+         */
         if (!type) {
             continue;
         }
@@ -197,11 +207,7 @@ function parseMarkdown(markdown) {
 /* ========================================================================== */
 
 /**
- * Split a Markdown table row.
- *
- * IMPORTANT:
- *
- * This understands escaped pipes.
+ * Split a Markdown table row while preserving escaped pipes.
  *
  * Example:
  *
@@ -210,21 +216,9 @@ function parseMarkdown(markdown) {
  * becomes:
  *
  * [
- *   "killer",
- *   "`{ eId: EntityId } \\| { name: string }`",
- *   "desc"
- * ]
- *
- * Empty cells are preserved:
- *
- * | foo | `string` |  |
- *
- * becomes:
- *
- * [
- *   "foo",
- *   "`string`",
- *   ""
+ *     "killer",
+ *     "`{ eId: EntityId } \\| { name: string }`",
+ *     "desc",
  * ]
  */
 function splitMarkdownTableRow(line) {
@@ -243,15 +237,6 @@ function splitMarkdownTableRow(line) {
         }
 
         if (char === "\\") {
-            /*
-             * Keep the slash so cleanType() can later turn
-             *
-             * \|
-             *
-             * into
-             *
-             * |
-             */
             current += char;
             escaped = true;
             continue;
@@ -266,16 +251,10 @@ function splitMarkdownTableRow(line) {
         current += char;
     }
 
-    /*
-     * Always push final cell.
-     */
     cells.push(current.trim());
 
     /*
-     * Remove the syntactic leading/trailing cells caused
-     * by the outer Markdown pipes.
-     *
-     * Do NOT filter empty cells.
+     * Remove Markdown's outer pipes.
      */
     if (line.trimStart().startsWith("|")) {
         cells.shift();
@@ -314,11 +293,12 @@ function cleanParameterName(name) {
 function cleanType(type) {
     let result = type
         .trim()
+        /*
+         * Remove surrounding Markdown code ticks.
+         */
         .replace(/^`|`$/g, "")
         /*
          * Markdown escaped pipe.
-         *
-         * \| -> |
          */
         .replace(/\\\|/g, "|")
         /*
@@ -330,9 +310,6 @@ function cleanType(type) {
         )
         .trim();
 
-    /*
-     * Normalize object types.
-     */
     result = normalizeObjectType(result);
 
     return result;
@@ -356,13 +333,6 @@ function cleanDescription(description) {
 /* ========================================================================== */
 
 function normalizeObjectType(type) {
-    /*
-     * Only deal with simple object types.
-     *
-     * Example:
-     *
-     * { foo: string; bar?: number }
-     */
     if (
         !type.startsWith("{") ||
         !type.endsWith("}")
@@ -376,50 +346,34 @@ function normalizeObjectType(type) {
         return "{}";
     }
 
-    const properties = splitObjectProperties(inner);
+    const properties =
+        splitObjectProperties(inner);
 
     if (properties.length === 0) {
         return type;
     }
 
-    return `{ ${properties.join(" ")} }`;
+    return `{ ${properties.join("; ")} }`;
 }
 
-/**
- * Split object properties.
- *
- * Supports:
- *
- * { foo: string; bar: number }
- *
- * { foo: string, bar: number }
- *
- * and also the malformed-but-common:
- *
- * { foo: string bar: number baz?: boolean }
- *
- * The last form requires detecting the next property name.
- */
 function splitObjectProperties(value) {
-    /*
-     * First try explicit separators.
-     */
-    const explicit = splitByTopLevelSeparators(value);
+    const explicit =
+        splitByTopLevelSeparators(value);
 
     if (explicit.length > 1) {
         return explicit;
     }
 
-    /*
-     * No explicit separator.
-     *
-     * Try to detect:
-     *
-     * foo: string bar?: number baz?: boolean
-     */
     return splitImplicitProperties(value);
 }
 
+/**
+ * Split:
+ *
+ * foo: string; bar: number
+ *
+ * foo: string, bar: number
+ */
 function splitByTopLevelSeparators(value) {
     const properties = [];
 
@@ -467,19 +421,31 @@ function splitByTopLevelSeparators(value) {
         if (char === "<") {
             angleDepth++;
         } else if (char === ">") {
-            angleDepth = Math.max(0, angleDepth - 1);
+            angleDepth = Math.max(
+                0,
+                angleDepth - 1,
+            );
         } else if (char === "{") {
             braceDepth++;
         } else if (char === "}") {
-            braceDepth = Math.max(0, braceDepth - 1);
+            braceDepth = Math.max(
+                0,
+                braceDepth - 1,
+            );
         } else if (char === "[") {
             bracketDepth++;
         } else if (char === "]") {
-            bracketDepth = Math.max(0, bracketDepth - 1);
+            bracketDepth = Math.max(
+                0,
+                bracketDepth - 1,
+            );
         } else if (char === "(") {
             parenDepth++;
         } else if (char === ")") {
-            parenDepth = Math.max(0, parenDepth - 1);
+            parenDepth = Math.max(
+                0,
+                parenDepth - 1,
+            );
         }
 
         const topLevel =
@@ -493,7 +459,9 @@ function splitByTopLevelSeparators(value) {
             (char === ";" || char === ",")
         ) {
             if (current.trim()) {
-                properties.push(current.trim());
+                properties.push(
+                    current.trim(),
+                );
             }
 
             current = "";
@@ -511,16 +479,13 @@ function splitByTopLevelSeparators(value) {
 }
 
 /**
- * Detect adjacent properties without separators.
+ * Handle malformed object types such as:
  *
- * Example:
- *
- * damage?: PNull<number> heldItemName?: PNull<string>
- *
- * -> 
- *
- * damage?: PNull<number>
- * heldItemName?: PNull<string>
+ * {
+ *     damage?: PNull<number>
+ *     heldItemName?: PNull<string>
+ *     horizontalKbMultiplier?: number
+ * }
  */
 function splitImplicitProperties(value) {
     const properties = [];
@@ -571,7 +536,10 @@ function splitImplicitProperties(value) {
         }
 
         if (char === ">") {
-            angleDepth = Math.max(0, angleDepth - 1);
+            angleDepth = Math.max(
+                0,
+                angleDepth - 1,
+            );
             continue;
         }
 
@@ -581,7 +549,10 @@ function splitImplicitProperties(value) {
         }
 
         if (char === "}") {
-            braceDepth = Math.max(0, braceDepth - 1);
+            braceDepth = Math.max(
+                0,
+                braceDepth - 1,
+            );
             continue;
         }
 
@@ -591,7 +562,10 @@ function splitImplicitProperties(value) {
         }
 
         if (char === "]") {
-            bracketDepth = Math.max(0, bracketDepth - 1);
+            bracketDepth = Math.max(
+                0,
+                bracketDepth - 1,
+            );
             continue;
         }
 
@@ -601,7 +575,10 @@ function splitImplicitProperties(value) {
         }
 
         if (char === ")") {
-            parenDepth = Math.max(0, parenDepth - 1);
+            parenDepth = Math.max(
+                0,
+                parenDepth - 1,
+            );
             continue;
         }
 
@@ -611,18 +588,19 @@ function splitImplicitProperties(value) {
             bracketDepth === 0 &&
             parenDepth === 0;
 
-        if (!topLevel || !/\s/.test(char)) {
+        if (
+            !topLevel ||
+            !/\s/.test(char)
+        ) {
             continue;
         }
 
         /*
-         * Look ahead for:
+         * Detect the next property:
          *
-         * propertyName:
+         * foo: string bar?: number
          *
-         * or
-         *
-         * propertyName?:
+         *                   ^^^^^
          */
         const rest = value.slice(i);
 
@@ -634,15 +612,16 @@ function splitImplicitProperties(value) {
             continue;
         }
 
-        const before = value.slice(start, i).trim();
+        const before = value
+            .slice(start, i)
+            .trim();
 
         if (!before) {
             continue;
         }
 
         /*
-         * Don't split if we're still inside a generic
-         * type expression.
+         * Don't split in the middle of a type expression.
          */
         if (
             before.endsWith("<") ||
@@ -655,18 +634,12 @@ function splitImplicitProperties(value) {
 
         properties.push(before);
 
-        /*
-         * Start at the next property name.
-         */
         start =
             i +
             nextProperty[0].indexOf(
                 nextProperty[1],
             );
 
-        /*
-         * Restart scanning state.
-         */
         angleDepth = 0;
         braceDepth = 0;
         bracketDepth = 0;
@@ -691,37 +664,59 @@ function splitImplicitProperties(value) {
 /* ========================================================================== */
 
 function generateDts(functions) {
-    const prefix = [];
+    const output = [];
 
-    prefix.push(
+    output.push(
         "// This file is auto-generated by document-to-type.mjs.",
     );
-    prefix.push("");
+    output.push("");
 
-    // prefix.push("declare type EntityId = string;");
-    // prefix.push("declare type PlayerId = string;");
-    // prefix.push("declare type LifeformId = string;");
-
+    /*
+     * Generate methods first so we can collect all referenced types.
+     */
     const methods = [];
+
     for (const fn of functions) {
         generateMethod(methods, fn);
     }
 
-    prefix.push(generateUnknownTypes(collectReferencedTypes(methods.join("\n"))));
-    prefix.push("");
+    /*
+     * Find all unknown types.
+     */
+    const types =
+        collectReferencedTypesFromFunctions(
+            functions,
+        );
 
-    prefix.push("export interface API {");
-    prefix.push("");
+    const unknownTypes =
+        generateUnknownTypes(types);
 
-    const suffix = [];
-    suffix.push("}");
-    suffix.push("");
+    if (unknownTypes) {
+        output.push(unknownTypes);
+        output.push("");
+    }
 
+    /*
+     * API interface.
+     */
+    output.push("export interface API {");
+    output.push("");
 
-    suffix.push("export declare const api: API;");
-    suffix.push("");
+    output.push(...methods);
 
-    return prefix.join("\n") + methods.join("\n") + suffix.join("\n");
+    output.push("}");
+    output.push("");
+
+    /*
+     * Actual API object.
+     */
+    output.push(
+        "export declare const api: API;",
+    );
+
+    output.push("");
+
+    return output.join("\n");
 }
 
 function generateMethod(output, fn) {
@@ -734,7 +729,7 @@ function generateMethod(output, fn) {
         for (const parameter of fn.parameters) {
             if (parameter.description) {
                 output.push(
-                    `     * @param ${parameter.name} ${escapeJsDoc(parameter.description)}`,
+                    `     * @param ${getParameterName(parameter)} ${escapeJsDoc(parameter.description)}`,
                 );
             }
         }
@@ -742,156 +737,52 @@ function generateMethod(output, fn) {
         output.push("     */");
     }
 
-    output.push(
-        `    ${fn.name}(`,
-    );
+    output.push(`    ${fn.name}(`);
 
     for (const parameter of fn.parameters) {
+        console.log(parameter)
         output.push(
-            `        ${parameter.name}${parameter.optional ? "?" : ""}: ${formatType(parameter.type)},`,
+            `        ${getParameterName(parameter)}${parameter.optional ? "?" : ""}: ${formatType(parameter.type)},`,
         );
     }
 
-    output.push(
-        `    ): ${fn.returnType};`,
-    );
-
+    output.push(`    ): ${fn.returnType};`);
     output.push("");
 }
 
 
-function generateFunction(output, fn) {
-    /*
-     * JSDoc
-     */
-    if (
-        fn.description ||
-        fn.parameters.some(
-            (parameter) => parameter.description,
-        )
-    ) {
-        output.push("/**");
+function getParameterName(parameter) {
+    const name = parameter.name.trim();
 
-        if (fn.description) {
-            output.push(
-                ` * ${escapeJsDoc(fn.description)}`,
-            );
-        }
-
-        for (const parameter of fn.parameters) {
-            if (!parameter.description) {
-                continue;
-            }
-
-            output.push(
-                ` * @param ${parameter.name} ${escapeJsDoc(parameter.description)}`,
-            );
-        }
-
-        output.push(" */");
+    // { ... } の destructuring parameter
+    if (name.startsWith("{") && name.endsWith("}")) {
+        return "opts";
     }
 
-    /*
-     * Function declaration.
-     */
-    output.push(
-        `export declare function ${fn.name}(`,
-    );
-
-    for (const parameter of fn.parameters) {
-        output.push(
-            `    ${parameter.name}${parameter.optional ? "?" : ""}: ${formatType(parameter.type)},`,
-        );
-    }
-
-    output.push(
-        `): ${fn.returnType};`,
-    );
-
-    output.push("");
-}
-
-function formatType(type) {
-    /*
-     * Keep the type valid and readable.
-     *
-     * Object types are expanded for readability.
-     */
-    if (
-        type.startsWith("{") &&
-        type.endsWith("}")
-    ) {
-        return formatObjectType(type);
-    }
-
-    return type;
-}
-
-function formatObjectType(type) {
-    const inner = type.slice(1, -1).trim();
-
-    if (!inner) {
-        return "{}";
-    }
-
-    const properties = splitObjectProperties(inner);
-
-    if (properties.length === 0) {
-        return type;
-    }
-
-    /*
-     * For a parameter type, multiline output is difficult
-     * because the caller currently writes one line.
-     *
-     * Keep it valid inline:
-     *
-     * {
-     *   foo: string;
-     *   bar?: number;
-     * }
-     *
-     * is valid TypeScript, but inline is also valid:
-     *
-     * { foo: string; bar?: number }
-     */
-    return `{ ${properties.join("; ")} }`;
-}
-
-function escapeJsDoc(value) {
-    return value.replace(/\*\//g, "*\\/");
+    return name;
 }
 
 
-
-
-
-// Generate type declration fallback
-
-import * as ts from "typescript";
-import { Project, SyntaxKind } from "ts-morph";
+/* ========================================================================== */
+/* Type fallback generation                                                   */
+/* ========================================================================== */
 
 function generateUnknownTypes(types) {
     return types
-        .map((name) => `type ${name} = any;`)
+        .map(
+            (name) =>
+                `type ${name}<T = any> = any;`,
+        )
         .join("\n");
 }
 
-function collectReferencedTypes(source) {
-    const project = new Project({
-        useInMemoryFileSystem: true,
-        skipAddingFilesFromTsConfig: true,
-    });
-
-    const sourceFile = project.createSourceFile(
-        "generated.d.ts",
-        source,
-        {
-            overwrite: true,
-        },
-    );
-
+function collectReferencedTypesFromFunctions(
+    functions,
+) {
     const builtin = new Set([
+        /*
+         * Primitive types
+         */
         "string",
         "number",
         "boolean",
@@ -906,6 +797,10 @@ function collectReferencedTypes(source) {
         "null",
         "true",
         "false",
+
+        /*
+         * Built-in generic types
+         */
         "Array",
         "ReadonlyArray",
         "Record",
@@ -918,33 +813,215 @@ function collectReferencedTypes(source) {
         "NonNullable",
         "ReturnType",
         "Parameters",
+        "ConstructorParameters",
         "InstanceType",
         "ThisType",
         "Promise",
+        "Awaited",
+
+        /*
+         * Intrinsic string manipulation types.
+         */
+        "Uppercase",
+        "Lowercase",
+        "Capitalize",
+        "Uncapitalize",
     ]);
+
+    // const genericParameters =
+    //     new Set([
+    //         "T",
+    //         "U",
+    //         "K",
+    //         "V",
+    //         "P",
+    //         "R",
+    //         "E",
+    //         "A",
+    //         "B",
+    //         "C",
+    //     ]);
+    const genericParameters = new Set([]);
 
     const types = new Set();
 
-    const nodes = sourceFile.getDescendantsOfKind(
-        SyntaxKind.TypeReference,
-    );
-
-    for (const node of nodes) {
-        const name = node.getTypeName().getText();
-
-        /*
-         * Foo.Bar のようなqualified nameは除外
-         */
-        if (name.includes(".")) {
-            continue;
+    for (const fn of functions) {
+        for (const parameter of fn.parameters) {
+            collectTypesFromType(
+                parameter.type,
+                types,
+                builtin,
+                genericParameters,
+            );
         }
 
+        collectTypesFromType(
+            fn.returnType,
+            types,
+            builtin,
+            genericParameters,
+        );
+    }
+
+    return [...types];
+}
+
+function collectTypesFromType(
+    type,
+    types,
+    builtin,
+    genericParameters,
+) {
+    /*
+     * Find identifiers.
+     */
+    const identifiers =
+        type.match(
+            /\b[A-Za-z_$][A-Za-z0-9_$]*\b/g,
+        ) ?? [];
+
+    for (const name of identifiers) {
+        /*
+         * Built-in type.
+         */
         if (builtin.has(name)) {
             continue;
         }
 
-        types.add(name);
+        /*
+         * Generic placeholder.
+         *
+         * QTEClientParameters<T>
+         *
+         * Don't generate:
+         *
+         * type T = any;
+         */
+        if (
+            genericParameters.has(name)
+        ) {
+            continue;
+        }
+
+        /*
+         * Check whether this identifier is
+         * an object property.
+         *
+         * { eId: EntityId }
+         *
+         * `eId` is NOT a type.
+         */
+        const propertyPattern =
+            new RegExp(
+                `\\b${escapeRegExp(
+                    name,
+                )}\\s*\\??\\s*:`,
+            );
+
+        if (
+            propertyPattern.test(type)
+        ) {
+            continue;
+        }
+
+        /*
+         * A type can appear after:
+         *
+         * :
+         * |
+         * &
+         * <
+         * ,
+         * (
+         *
+         * Examples:
+         *
+         * : EntityId
+         * | EntityId
+         * <EntityId>
+         * Foo<EntityId>
+         */
+        const typePattern =
+            new RegExp(
+                `(?:^|[:|&<>,(])\\s*${escapeRegExp(
+                    name,
+                )}\\b`,
+            );
+
+        /*
+         * Generic type itself:
+         *
+         * PNull<number>
+         *
+         *       ^
+         *
+         * QTEClientParameters<T>
+         * ^^^^^^^^^^^^^^^^^^^
+         */
+        const genericPattern =
+            new RegExp(
+                `\\b${escapeRegExp(
+                    name,
+                )}\\s*<`,
+            );
+
+        if (
+            typePattern.test(type) ||
+            genericPattern.test(type)
+        ) {
+            types.add(name);
+        }
+    }
+}
+
+/* ========================================================================== */
+/* Formatting                                                                 */
+/* ========================================================================== */
+
+function formatType(type) {
+    if (
+        type.startsWith("{") &&
+        type.endsWith("}")
+    ) {
+        return formatObjectType(type);
     }
 
-    return [...types];
+    return type;
+}
+
+function formatObjectType(type) {
+    const inner = type
+        .slice(1, -1)
+        .trim();
+
+    if (!inner) {
+        return "{}";
+    }
+
+    const properties =
+        splitObjectProperties(inner);
+
+    if (properties.length === 0) {
+        return type;
+    }
+
+    return `{ ${properties.join("; ")} }`;
+}
+
+/* ========================================================================== */
+/* Utilities                                                                  */
+/* ========================================================================== */
+
+function escapeRegExp(value) {
+    return value.replace(
+        /[.*+?^${}()|[\]\\]/g,
+        "\\$&",
+    );
+}
+
+function escapeJsDoc(value) {
+    return value.replace(
+        /\*\//g,
+        "*\\/",
+    );
 }
