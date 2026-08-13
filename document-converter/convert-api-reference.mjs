@@ -769,7 +769,7 @@ function generateMethod(output, fn) {
     for (const parameter of fn.parameters) {
         // console.log(parameter)
         output.push(
-            `        ${getParameterName(parameter)}${parameter.optional ? "?" : ""}: ${formatType(parameter.type)},`,
+            `        ${getParameterName(parameter)}?: ${formatType(parameter.type)},`,
         );
     }
 

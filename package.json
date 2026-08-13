@@ -1,11 +1,11 @@
 {
   "name": "codername",
-  "version": "1.0.1",
+  "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc && pnpm exec node document-converter/convert-api-reference.mjs && pnpm exec node document-converter/convert-callbacks.mjs && echo export\\ const\\ api=globalThis.api > lib/api.js && touch lib/callbacks.js",
+    "build": "pnpm exec node document-converter/convert-api-reference.mjs && pnpm exec node document-converter/convert-callbacks.mjs && echo export\\ const\\ api=globalThis.api > lib/api.js && touch lib/callbacks.js && tsc",
     "watch": "tsc --watch"
   },
   "bin": {
@@ -34,6 +34,7 @@
   },
   "exports": {
     ".": "./lib/index.js",
+    "./logging": "./lib/logging.js",
     "./api": {
       "types": "./lib/api.d.ts",
       "import": "./lib/api.js",
