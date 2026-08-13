@@ -63,6 +63,7 @@ function parseMarkdown(markdown) {
 
     let currentFunction = null;
     let inParameters = false;
+    let inReturnType = false;
 
     for (const line of lines) {
         /*
@@ -108,7 +109,20 @@ function parseMarkdown(markdown) {
          */
         if (/^###\s+/.test(line)) {
             inParameters = false;
+
+            /*
+            * ### Returns:
+            */
+            if (/^###\s+Returns\s*:?\s*$/i.test(line)) {
+                inReturnType = true;
+            }
             continue;
+        }
+
+        if (inReturnType) {
+            // Next line of the heading of the returns
+            currentFunction.returnType = line.replaceAll("\\", "").replaceAll("`", "");
+            inReturnType = false;
         }
 
         /*
