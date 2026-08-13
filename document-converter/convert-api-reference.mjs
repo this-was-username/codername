@@ -1,7 +1,11 @@
 #!/usr/bin/env node
 
 import fs from "node:fs";
-import path from "node:path";
+import path from "path";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 /*
  * Markdown API documentation -> TypeScript declaration file
@@ -21,8 +25,8 @@ import path from "node:path";
 const [
     ,
     ,
-    inputFile = "official-reference-copy.md",
-    outputFile = "lib/api.d.ts",
+    inputFile = path.join(__dirname, "..", "official-reference-copy", "api-reference.md"),
+    outputFile = path.join(__dirname, "..", "lib", "api.d.ts"),
 ] = process.argv;
 
 const inputPath = path.resolve(inputFile);

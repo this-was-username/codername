@@ -1,0 +1,58 @@
+import fs from "node:fs";
+import path from "path";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+const input = fs.readFileSync(path.join(__dirname, "..", "official-reference-copy", "callbacks.md"), "utf8");
+
+const blocks = input.split(/\n(?=## )/);
+
+const functions = [];
+
+for (const block of blocks) {
+
+    const match = block.match(
+        /^## ([A-Za-z0-9_]+)\n[\s\S]*?\| Parameter \| Type \| Description \|\n\|[-| ]+\|\n([\s\S]*?)(?=\n\n|$)/
+    );
+
+    const returnMatch = block.match(
+        /^### Returns:\n`(.+)`/m
+    )
+
+    if (!match) continue;
+
+    const [, functionName, parameterTable] = match;
+
+    const params = [];
+
+    for (const line of parameterTable.trim().split("\n")) {
+        const columns = line
+            .split(/(?<!\\)\|/)
+            .map(v => v.trim().replaceAll("`", "").replaceAll("\\", ""))
+            .filter(Boolean);
+
+        if (columns.length < 2) continue;
+
+        const [name, type] = columns;
+
+        params.push(`    ${name}: ${type}`);
+    }
+    const returnType = returnMatch?.[1].replaceAll("\\", "") ?? "void";
+
+    functions.push(
+        `  const ${functionName}: (\n${params.join(",\n")}\n  ) => ${returnType};`
+    );
+}
+
+const output = `export { };
+
+declare global {
+${functions.join("\n\n")}
+}
+`;
+
+fs.writeFileSync(path.join(__dirname, "..", "lib", "callbacks.d.ts"), output);
+
+console.log("Generated ./generated.d.ts");
