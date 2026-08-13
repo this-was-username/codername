@@ -5,6 +5,6 @@ import "codername/callbacks";
 logHello();
 api.setClientOption(api.getPlayerIds()[0], "middleTextUpper", "hellow")
 
-globalThis.onPlayerJoin = () => {
-
+globalThis.onPlayerJoin = (id) => {
+    api.log(id, "lol");
 }

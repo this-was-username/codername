@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc && pnpm exec node document-converter/convert-api-reference.mjs && pnpm exec node document-converter/convert-callbacks.mjs && echo export\\ const\\ api=globalThis.api > lib/api.js",
+    "build": "tsc && pnpm exec node document-converter/convert-api-reference.mjs && pnpm exec node document-converter/convert-callbacks.mjs && echo export\\ const\\ api=globalThis.api > lib/api.js && touch lib/callbacks.js",
     "watch": "tsc --watch"
   },
   "bin": {
@@ -40,7 +40,8 @@
       "default": "./lib/api.js"
     },
     "./callbacks": {
-      "types": "./lib/callbacks.d.ts"
+      "types": "./lib/callbacks.d.ts",
+      "import": "./lib/callbacks.js"
     }
   }
 }
