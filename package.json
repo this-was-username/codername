@@ -9,7 +9,7 @@
     "watch": "tsc --watch"
   },
   "bin": {
-    "codername": "./lib/index.js"
+    "codername": "./lib/cli/cli.js"
   },
   "keywords": [],
   "author": "",
