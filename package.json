@@ -38,6 +38,9 @@
       "types": "./lib/api.d.ts",
       "import": "./lib/api.js",
       "default": "./lib/api.js"
+    },
+    "./callbacks": {
+      "types": "./lib/callbacks.d.ts"
     }
   }
 }

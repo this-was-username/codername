@@ -1,6 +1,10 @@
 import { logHello } from "./logHello.js";
 import { api } from "codername/api";
+import "codername/callbacks";
 
-api.setClientOption("-1", "middleTextUpper", "hellow")
+logHello();
+api.setClientOption(api.getPlayerIds()[0], "middleTextUpper", "hellow")
 
-globalThis.onPlayerJoin = () => { }
+globalThis.onPlayerJoin = () => {
+
+}

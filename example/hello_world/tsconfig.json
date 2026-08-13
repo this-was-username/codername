@@ -15,9 +15,6 @@
         "strictNullChecks": true,
         "strictPropertyInitialization": true,
         "stripInternal": true,
-        "types": [
-            "node"
-        ]
     },
     "skipLibCheck": true,
     "include": [
