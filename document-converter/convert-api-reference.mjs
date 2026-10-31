@@ -723,6 +723,8 @@ function generateDts(functions) {
         output.push("");
     }
 
+    output.push("type InbuiltEffectInfo = {inbuiltLevel: number, displayName: string, icon: string, initiatorId: PlayerId, onEndCb: ()=>void}")
+
     /*
      * API interface.
      */
@@ -746,6 +748,9 @@ function generateDts(functions) {
     return output.join("\n");
 }
 
+// const typeReplaces = {
+//     // "{ icon?: IngameIconName | ItemName; onEndCb?: () => void; displayName?: string | TranslatedText } & Partial<InbuiltEffectInfo>": "{ icon?: IngameIconName | ItemName; onEndCb?: () => void; displayName?: string | TranslatedText } & ",
+// }
 function generateMethod(output, fn) {
     if (fn.description) {
         output.push("    /**");
@@ -862,6 +867,11 @@ function collectReferencedTypesFromFunctions(
         "Lowercase",
         "Capitalize",
         "Uncapitalize",
+
+        /*
+         * Types to override.
+        */
+        "InbuiltEffectInfo",
     ]);
 
     // const genericParameters =
