@@ -117,7 +117,15 @@ const anyTypeDefenition = [];
 
 for (const type of types) {
     if (type && !builtinTypes.has(type)) {
-        anyTypeDefenition.push(`type ${type}<T = any> = any;`)
+        let suggestedType;
+        if (type.includes("Id")) {
+            suggestedType = "string";
+        } else if (type.includes("Type")) {
+            suggestedType = "string";
+        } else {
+            suggestedType = "unknown";
+        }
+        anyTypeDefenition.push(`type ${type}<T = any> = ${suggestedType};`)
     }
 }
 

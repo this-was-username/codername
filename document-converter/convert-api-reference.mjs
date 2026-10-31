@@ -797,8 +797,17 @@ function getParameterName(parameter) {
 function generateUnknownTypes(types) {
     return types
         .map(
-            (name) =>
-                `type ${name}<T = any> = any;`,
+            (type) => {
+                let suggestedType;
+                if (type.includes("Id")) {
+                    suggestedType = "string";
+                } else if (type.includes("Type")) {
+                    suggestedType = "string";
+                } else {
+                    suggestedType = "unknown";
+                }
+                return `type ${type}<T = any> = ${suggestedType};`
+            }
         )
         .join("\n");
 }
