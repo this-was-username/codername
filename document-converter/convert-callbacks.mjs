@@ -123,7 +123,7 @@ for (const type of types) {
         } else if (type.includes("Type")) {
             suggestedType = "string";
         } else {
-            suggestedType = "unknown";
+            suggestedType = "any";
         }
         anyTypeDefenition.push(`type ${type}<T = any> = ${suggestedType};`)
     }
