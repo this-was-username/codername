@@ -21,4 +21,4 @@ Those are built-in in the framework.
 
 
 ## Credit
-Made by [this_was_username](https://youtube.com/@this_was_username), contributers and ❤️.
+Made by [this_was_username](https://youtube.com/@this_was_username) and contributers.

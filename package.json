@@ -43,6 +43,10 @@
     "./callbacks": {
       "types": "./lib/callbacks.d.ts",
       "import": "./lib/callbacks.js"
+    },
+    "./utils/concatCallbacks": {
+      "types": "./lib/utils/concatCallbacks.d.ts",
+      "import": "./lib/utils/concatCallbacks.js"
     }
   }
 }
