@@ -3,6 +3,7 @@ import path from "node:path";
 import * as esbuild from "esbuild";
 import { run } from "./components/runCommand.js";
 import fs from "node:fs";
+import pkg from '../../package.json' with { type: 'json' }
 
 
 const program = new Command();
@@ -38,6 +39,12 @@ async function build(dir: string) {
         minify: true,
         bundle: true,
         platform: "node",
+        banner: {
+            js: `/*!
+  ${pkg.name} v${pkg.version} | ${pkg.license}
+  The framework for bloxd coders.
+  https://github.com/this-was-username/codername
+*/` },
         outfile: path.join(dir, "dist/code.js"),
     });
 }

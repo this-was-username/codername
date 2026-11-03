@@ -1,4 +1,4 @@
-import { api } from "../lib/api";
+import { api } from "../lib/api.js";
 
 
 export type LogLevelType = 0 | 1 | 2 | 3;
