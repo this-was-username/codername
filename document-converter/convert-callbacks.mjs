@@ -62,7 +62,7 @@ const builtinTypes = new Set([
 ]);
 
 const returnTypeOverrides = {
-    playerCommand: "(boolean | undefined)",
+    playerCommand: "boolean | undefined",
 };
 
 for (const block of blocks) {
