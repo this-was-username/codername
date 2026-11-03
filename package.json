@@ -47,6 +47,10 @@
     "./utils/concatCallbacks": {
       "types": "./lib/utils/concatCallbacks.d.ts",
       "import": "./lib/utils/concatCallbacks.js"
+    },
+    "./utils/random": {
+      "types": "./lib/utils/random.d.ts",
+      "import": "./lib/utils/random.js"
     }
   }
 }
