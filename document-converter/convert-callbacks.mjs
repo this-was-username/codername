@@ -61,6 +61,10 @@ const builtinTypes = new Set([
     "Uncapitalize",
 ]);
 
+const returnTypeOverrides = {
+    playerCommand: "(boolean | undefined)",
+};
+
 for (const block of blocks) {
 
     const match = block.match(
@@ -98,7 +102,9 @@ for (const block of blocks) {
                 e.replaceAll(/\[.*\]/g, "")
             ))
     }
-    const returnType = returnMatch?.[1].replaceAll("\\", "") ?? "void";
+    const returnType = returnTypeOverrides[functionName]
+        ? returnTypeOverrides[functionName]
+        : returnMatch?.[1].replaceAll("\\", "") ?? "void";
     returnType.split(" | ").forEach(
         e => !(
             // String literal
