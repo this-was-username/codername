@@ -213,9 +213,6 @@ importers:
       commander:
         specifier: ^15.0.0
         version: 15.0.0
-      development:
-        specifier: link:../..
-        version: link:../..
       esbuild:
         specifier: ^0.28.2
         version: 0.28.2
