@@ -50,6 +50,10 @@
     "./utils/random": {
       "types": "./lib/utils/random.d.ts",
       "import": "./lib/utils/random.js"
+    },
+    "./utils/command": {
+      "types": "./lib/utils/command.d.ts",
+      "import": "./lib/utils/command.js"
     }
   }
 }
