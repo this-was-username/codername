@@ -18,6 +18,8 @@ Those are built-in in the framework.
 
 ## How to use
 1. Install nodejs
+2. Copy example/hello_world from the repository to your local
+3. Here we go!
 
 
 ## Credit
