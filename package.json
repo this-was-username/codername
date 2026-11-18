@@ -17,7 +17,7 @@
   "devEngines": {
     "packageManager": {
       "name": "pnpm",
-      "version": "^11.9.0",
+      "version": "^12.21.0",
       "onFail": "download"
     }
   },
@@ -38,6 +38,10 @@
       "types": "./lib/api.d.ts",
       "import": "./lib/api.js",
       "default": "./lib/api.js"
+    },
+    "./build": {
+      "types": "./lib/build.d.ts",
+      "import": "./lib/build.js"
     },
     "./callbacks": {
       "types": "./lib/callbacks.d.ts",
